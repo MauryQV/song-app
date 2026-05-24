@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Song App</title>
+  <link rel="manifest" href="manifest.json">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+  <div id="app">
+    <div id="track-info">
+      <h1 id="song-title">Nombre de la canción</h1>
+    </div>
+
+    <div id="lyrics-container">
+      <!-- Las líneas se generan con JS -->
+    </div>
+
+    <div id="player">
+      <div id="progress-bar">
+        <div id="progress-fill"></div>
+      </div>
+      <div id="time-display">
+        <span id="current-time">0:00</span>
+        <span id="total-time">0:00</span>
+      </div>
+      <div id="controls">
+        <button id="btn-play">▶</button>
+        <button id="btn-toggle">🎤 Con voz</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Dos pistas, ocultas -->
+  <audio id="audio-vocal"  src="audio/vocal.mp3"         preload="auto"></audio>
+  <audio id="audio-instr"  src="audio/instrumental.mp3"  preload="auto"></audio>
+
+  <script src="app.js"></script>
+</body>
+</html>
