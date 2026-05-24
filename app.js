@@ -50,7 +50,8 @@ btnToggle.addEventListener('click', () => {
   btnToggle.textContent = activeTrack === vocal ? ' Con voz' : ' Sin voz';
 });
 
-activeTrack.addEventListener('timeupdate', syncLyrics);
+vocal.addEventListener('timeupdate', syncLyrics);
+instr.addEventListener('timeupdate', syncLyrics);
 
 function syncLyrics() {
   const t = activeTrack.currentTime + offset;
