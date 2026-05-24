@@ -10,8 +10,8 @@ const totalTimeEl = document.getElementById('total-time');
 let activeTrack = vocal;
 let lyrics = [];
 let currentIndex = -1;
+let offset = 0.0;
 
-// Cargar letras
 fetch('lyrics.json')
   .then(r => r.json())
   .then(data => {
@@ -25,12 +25,11 @@ function renderLyrics() {
     const el = document.createElement('p');
     el.textContent = line.text;
     el.dataset.index = i;
-    el.addEventListener('click', () => seekTo(line.time));
+    el.addEventListener('click', () => seekTo(line.start));
     lyricsContainer.appendChild(el);
   });
 }
 
-// Play / Pause
 btnPlay.addEventListener('click', () => {
   if (activeTrack.paused) {
     activeTrack.play();
@@ -41,7 +40,6 @@ btnPlay.addEventListener('click', () => {
   }
 });
 
-// Toggle vocal / instrumental
 btnToggle.addEventListener('click', () => {
   const time = activeTrack.currentTime;
   const playing = !activeTrack.paused;
@@ -49,36 +47,45 @@ btnToggle.addEventListener('click', () => {
   activeTrack = activeTrack === vocal ? instr : vocal;
   activeTrack.currentTime = time;
   if (playing) activeTrack.play();
-  btnToggle.textContent = activeTrack === vocal ? '🎤 Con voz' : '🎵 Sin voz';
+  btnToggle.textContent = activeTrack === vocal ? ' Con voz' : ' Sin voz';
 });
 
-// Sincronización de letras
 activeTrack.addEventListener('timeupdate', syncLyrics);
 
 function syncLyrics() {
-  const t = activeTrack.currentTime;
+  const t = activeTrack.currentTime + offset;
 
-  // Progress bar
+  // Progress bar general
   const pct = (t / activeTrack.duration) * 100;
   progressFill.style.width = pct + '%';
 
-  // Tiempo
   currentTimeEl.textContent = formatTime(t);
   totalTimeEl.textContent = formatTime(activeTrack.duration);
 
-  // Línea activa
+  // Buscar línea activa usando start y end
   let idx = -1;
-  for (let i = lyrics.length - 1; i >= 0; i--) {
-    if (t >= lyrics[i].time) { idx = i; break; }
+  for (let i = 0; i < lyrics.length; i++) {
+    if (t >= lyrics[i].start && t <= lyrics[i].end) {
+      idx = i;
+      break;
+    }
   }
 
+  // Highlight y clases
+  document.querySelectorAll('#lyrics-container p').forEach((el, i) => {
+    const line = lyrics[i];
+    const isPast = t > line.end;
+    const isActive = i === idx;
+
+    el.classList.toggle('active', isActive);
+    el.classList.toggle('past', isPast && !isActive);
+    el.classList.remove('inactive');
+    if (!isActive && !isPast) el.classList.add('inactive');
+  });
+
+  // Scroll automático
   if (idx !== currentIndex) {
     currentIndex = idx;
-    document.querySelectorAll('#lyrics-container p').forEach((el, i) => {
-      el.classList.toggle('active', i === idx);
-      el.classList.toggle('past', i < idx);
-    });
-    // Scroll automático
     const activeEl = lyricsContainer.querySelector('.active');
     if (activeEl) {
       activeEl.scrollIntoView({ behavior: 'smooth', block: 'center' });
@@ -86,14 +93,12 @@ function syncLyrics() {
   }
 }
 
-// Clic en progress bar para navegar
 document.getElementById('progress-bar').addEventListener('click', (e) => {
   const rect = e.currentTarget.getBoundingClientRect();
   const pct = (e.clientX - rect.left) / rect.width;
   activeTrack.currentTime = pct * activeTrack.duration;
 });
 
-// Clic en línea para saltar al momento
 function seekTo(time) {
   activeTrack.currentTime = time;
   if (activeTrack.paused) {
@@ -109,7 +114,6 @@ function formatTime(s) {
   return `${m}:${sec}`;
 }
 
-// Registrar Service Worker
 if ('serviceWorker' in navigator) {
   navigator.serviceWorker.register('service-worker.js');
 }

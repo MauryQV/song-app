@@ -92,5 +92,9 @@ body {
   font-size: 15px;
   cursor: pointer;
 }
+#lyrics-container p.inactive {
+  color: #333;
+}
+
 
 #controls button:hover { background: #17a347; }
